@@ -1,0 +1,8 @@
+project:
+  type: website
+  output-dir: root
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
