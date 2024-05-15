@@ -242,6 +242,6 @@
     "href": "index.html",
     "title": "Machine Learning for Road Segmentation",
     "section": "",
-    "text": "Title\nThis is a test\n\n1 + 1\n\n2\n\n\n\nfor i in range(10):\n    print(i)\n\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9"
+    "text": "Title\nThis is a test\n\n1 + 1\n\n2\n\n\nNotice how the code chunk below does not show by default, but its output does!\n\n# code-fold: true\nfor i in range(10):\n    print(i)\n\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9"
   }
 ]
