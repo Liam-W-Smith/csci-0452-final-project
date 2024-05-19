@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Testing K-means Clustering</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Testing K-means Clustering</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="testing-k-means-clustering" class="level1">
+<h1>Testing K-means Clustering</h1>
+<section id="use-techniques-weve-already-learned-in-class-to-try-and-make-progress-on-identifying-roads" class="level3">
+<h3 class="anchored" data-anchor-id="use-techniques-weve-already-learned-in-class-to-try-and-make-progress-on-identifying-roads">Use techniques we’ve already learned in class to try and make progress on identifying roads</h3>
+<p>Imports</p>
+<div id="cell-2" class="cell" data-execution_count="102">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> skimage.io <span class="im">as</span> skio</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> skimage.util <span class="im">as</span> sku</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> skimage.color <span class="im">as</span> skol</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> filters, feature, transform</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> skimage.morphology <span class="im">as</span> skimor</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> skimage.draw <span class="im">as</span> draw</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.signal <span class="im">import</span> convolve2d</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mpl_toolkits.mplot3d</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cluster <span class="im">import</span> KMeans</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.ndimage <span class="im">import</span> gaussian_filter, gaussian_laplace</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow.keras.backend <span class="im">as</span> K</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-3" class="cell" data-execution_count="103">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="read-data-file-and-show-images" class="level3">
+<h3 class="anchored" data-anchor-id="read-data-file-and-show-images">Read data file and show images</h3>
+<div id="cell-5" class="cell" data-execution_count="104">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>image_filepath <span class="op">=</span> <span class="st">"../../data/massRoads/tiff"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># /train/... for images and /train_labels/... for labels</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-6" class="cell" data-execution_count="173">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>full_image <span class="op">=</span> skio.imread(image_filepath <span class="op">+</span> <span class="st">"/train/21929005_15.tiff"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>full_image_label <span class="op">=</span> skio.imread(image_filepath <span class="op">+</span> <span class="st">"/train_labels/21929005_15.tif"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-7" class="cell" data-execution_count="106">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">2</span>, figsize <span class="op">=</span> (<span class="dv">10</span>,<span class="dv">15</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].imshow(full_image)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].imshow(full_image_label, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Cropping Image for testing</p>
+<div id="cell-9" class="cell" data-execution_count="107">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x1, x2 <span class="op">=</span> <span class="dv">0</span>, <span class="dv">1500</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y1, y2 <span class="op">=</span> <span class="dv">0</span>, <span class="dv">1500</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># x1, x2 = 1500, 1500</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># y1, y2 = 1500, 1500</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> full_image[y1:y2, x1:x2, :]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>image_label <span class="op">=</span> full_image_label[y1:y2, x1:x2]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-10" class="cell" data-execution_count="108">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">2</span>, figsize <span class="op">=</span> (<span class="dv">10</span>,<span class="dv">15</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].imshow(image)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].imshow(image_label, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="function-for-calculating-label-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="function-for-calculating-label-accuracy">Function for calculating label accuracy</h3>
+<div id="cell-12" class="cell" data-execution_count="109">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dice_coef(y_true, y_pred, smooth<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    intersection <span class="op">=</span> np.<span class="bu">sum</span>(y_true <span class="op">*</span> y_pred)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="fl">2.</span> <span class="op">*</span> intersection <span class="op">+</span> smooth) <span class="op">/</span> (np.<span class="bu">sum</span>(y_true) <span class="op">+</span> np.<span class="bu">sum</span>(y_pred) <span class="op">+</span> smooth)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="110">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to print several accuracy metrics</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> accuracy_metrics(y_true, y_pred):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create confusion matrix</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    C <span class="op">=</span> confusion_matrix(y_true, y_pred, labels<span class="op">=</span>(<span class="va">True</span>, <span class="va">False</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Overall accuracy rate</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    acc <span class="op">=</span> (C[<span class="dv">0</span>,<span class="dv">0</span>] <span class="op">+</span> C[<span class="dv">1</span>,<span class="dv">1</span>])<span class="op">/</span>C.<span class="bu">sum</span>()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Recall</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    recall <span class="op">=</span> (C[<span class="dv">0</span>,<span class="dv">0</span>])<span class="op">/</span>(C[<span class="dv">0</span>,<span class="dv">0</span>] <span class="op">+</span> C[<span class="dv">1</span>,<span class="dv">0</span>])</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Precision</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    prec <span class="op">=</span> (C[<span class="dv">0</span>,<span class="dv">0</span>])<span class="op">/</span>(C[<span class="dv">0</span>,<span class="dv">0</span>] <span class="op">+</span> C[<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    dice <span class="op">=</span> dice_coef(y_true<span class="op">=</span>y_true, y_pred<span class="op">=</span>y_pred)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Print results</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Confusion matrix:</span><span class="ch">\n</span><span class="st">"</span>, C)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Overall accuracy:"</span>, np.<span class="bu">round</span>(acc, <span class="dv">3</span>), <span class="st">"</span><span class="ch">\n</span><span class="st">Precision:"</span>, np.<span class="bu">round</span>(recall, <span class="dv">3</span>), <span class="st">"</span><span class="ch">\n</span><span class="st">Recall"</span>, np.<span class="bu">round</span>(prec, <span class="dv">3</span>), <span class="st">"</span><span class="ch">\n</span><span class="st">Dice Coefficient"</span>, np.<span class="bu">round</span>(dice, <span class="dv">3</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="111">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#what values are used in label image</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>np.unique(image_label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="111">
+<pre><code>array([  0, 255], dtype=uint8)</code></pre>
+</div>
+</div>
+</section>
+<section id="reshape-image" class="level3">
+<h3 class="anchored" data-anchor-id="reshape-image">Reshape image</h3>
+<div id="cell-16" class="cell" data-execution_count="112">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>pixel_vals <span class="op">=</span> image.reshape((<span class="op">-</span><span class="dv">1</span>,<span class="dv">3</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>pixel_vals <span class="op">=</span> np.float32(pixel_vals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="k-means-from-sklearn-with-just-rgb" class="level3">
+<h3 class="anchored" data-anchor-id="k-means-from-sklearn-with-just-rgb">K means from sklearn with just RGB</h3>
+<div id="cell-18" class="cell" data-execution_count="113">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sk_kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">3</span>, verbose<span class="op">=</span><span class="dv">1</span>).fit(pixel_vals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initialization complete
+Iteration 0, inertia 4702888960.0.
+Iteration 1, inertia 3000623104.0.
+Iteration 2, inertia 2794777600.0.
+Iteration 3, inertia 2693770496.0.
+Iteration 4, inertia 2641820160.0.
+Iteration 5, inertia 2614184448.0.
+Iteration 6, inertia 2598637824.0.
+Iteration 7, inertia 2589610752.0.
+Iteration 8, inertia 2584902144.0.
+Iteration 9, inertia 2582124544.0.
+Iteration 10, inertia 2580577792.0.
+Iteration 11, inertia 2579322624.0.
+Iteration 12, inertia 2578926336.0.
+Converged at iteration 12: center shift 0.21074505150318146 within tolerance 0.24255793457031252.</code></pre>
+</div>
+</div>
+<div id="cell-19" class="cell" data-execution_count="114">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>sk_segmented_image_pca <span class="op">=</span> sk_kmeans.labels_.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="115">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>skio.imshow(sk_segmented_image_pca, cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/aidenpape/miniconda3/lib/python3.11/site-packages/skimage/io/_plugins/matplotlib_plugin.py:149: UserWarning: Low image data range; displaying image with stretched contrast.
+  lo, hi, cmap = _get_display_range(image)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-15-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="lets-try-to-input-a-few-more-things-into-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="lets-try-to-input-a-few-more-things-into-the-model">Let’s try to input a few more things into the model</h3>
+<p>Let’s try to put a horizontal and vertically run edge detection using Sobel kernels</p>
+<div id="cell-23" class="cell" data-execution_count="116">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>image_gray <span class="op">=</span> skol.rgb2gray(image)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define Sobel kernels</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>sobel_horizontal <span class="op">=</span> np.array([[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>],</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                             [ <span class="dv">0</span>,  <span class="dv">0</span>,  <span class="dv">0</span>],</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                             [ <span class="dv">1</span>,  <span class="dv">2</span>,  <span class="dv">1</span>]])</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>sobel_vertical <span class="op">=</span> np.array([[<span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>],</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                           [<span class="op">-</span><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>],</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                           [<span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]])</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform convolutions</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>edges_horizontal <span class="op">=</span> convolve2d(image_gray, sobel_horizontal, mode<span class="op">=</span><span class="st">'same'</span>, boundary<span class="op">=</span><span class="st">'symm'</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>edges_vertical <span class="op">=</span> convolve2d(image_gray, sobel_vertical, mode<span class="op">=</span><span class="st">'same'</span>, boundary<span class="op">=</span><span class="st">'symm'</span>)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the magnitude of the gradient</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> np.sqrt(np.square(edges_horizontal) <span class="op">+</span> np.square(edges_vertical))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-24" class="cell" data-execution_count="117">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>skio.imshow(edges, cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/aidenpape/miniconda3/lib/python3.11/site-packages/skimage/io/_plugins/matplotlib_plugin.py:149: UserWarning: Float image out of standard range; displaying image with stretched contrast.
+  lo, hi, cmap = _get_display_range(image)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-17-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="lets-use-canny-edge-detection-instead" class="level2">
+<h2 class="anchored" data-anchor-id="lets-use-canny-edge-detection-instead">Let’s use canny edge detection instead</h2>
+<div id="cell-26" class="cell" data-execution_count="118">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculation Canny gradient</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>canny_edges <span class="op">=</span> feature.canny(image_gray, sigma<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="dilation-to-create-crisper-edges" class="level3">
+<h3 class="anchored" data-anchor-id="dilation-to-create-crisper-edges">Dilation to create crisper edges</h3>
+<div id="cell-28" class="cell" data-execution_count="119">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create disk</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>disk <span class="op">=</span> skimor.disk(<span class="dv">1</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Area closing</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>closed_edges <span class="op">=</span> skimor.dilation(canny_edges, footprint <span class="op">=</span> disk)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>closed_edges <span class="op">=</span> closed_edges <span class="op">*</span> <span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-29" class="cell" data-execution_count="120">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating figure 2</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">5</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> axes.ravel()</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(canny_edges, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Canny Edges'</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(closed_edges, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Closed Canny edges'</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].imshow(image)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].set_title(<span class="st">'Original Image'</span>)</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a <span class="kw">in</span> ax:</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    a.set_axis_off()</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-20-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now lets add this new channel to the image and see what happens</p>
+<div id="cell-31" class="cell" data-execution_count="121">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>image_with_canny <span class="op">=</span> np.dstack((image, closed_edges.astype(np.uint8) <span class="op">*</span> <span class="dv">255</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="122">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>feature_vals <span class="op">=</span> image_with_canny.reshape((<span class="op">-</span><span class="dv">1</span>,<span class="dv">4</span>))</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>feature_vals <span class="op">=</span> np.float32(feature_vals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-33" class="cell" data-execution_count="123">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>sk_kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">3</span>, verbose<span class="op">=</span><span class="dv">1</span>).fit(feature_vals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initialization complete
+Iteration 0, inertia 3043438080.0.
+Iteration 1, inertia 2653675520.0.
+Iteration 2, inertia 2619363840.0.
+Iteration 3, inertia 2601338880.0.
+Iteration 4, inertia 2591492864.0.
+Iteration 5, inertia 2585991424.0.
+Iteration 6, inertia 2582735616.0.
+Iteration 7, inertia 2581043200.0.
+Iteration 8, inertia 2579904768.0.
+Iteration 9, inertia 2579204608.0.
+Iteration 10, inertia 2578784256.0.
+Converged at iteration 10: center shift 0.1291225403547287 within tolerance 0.18192149658203127.</code></pre>
+</div>
+</div>
+<div id="cell-34" class="cell" data-execution_count="124">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>sk_segmented_image_pca <span class="op">=</span> sk_kmeans.labels_.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-35" class="cell" data-execution_count="125">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>skio.imshow(sk_segmented_image_pca, cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/aidenpape/miniconda3/lib/python3.11/site-packages/skimage/io/_plugins/matplotlib_plugin.py:149: UserWarning: Low image data range; displaying image with stretched contrast.
+  lo, hi, cmap = _get_display_range(image)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-25-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-36" class="cell" data-execution_count="126">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>np.unique(sk_segmented_image_pca)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="126">
+<pre><code>array([0, 1, 2], dtype=int32)</code></pre>
+</div>
+</div>
+<div id="cell-37" class="cell" data-execution_count="127">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating figure 2</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>cluster_one <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">0</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">0</span>].imshow(cluster_one, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">0</span>].set_title(<span class="st">'Cluster One'</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>cluster_two <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">1</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">1</span>].imshow(cluster_two, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">1</span>].set_title(<span class="st">'Cluster Two'</span>)</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>cluster_three <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">2</span>)</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">0</span>].imshow(cluster_three, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">0</span>].set_title(<span class="st">'Cluster Three'</span>)</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">1</span>].imshow(image)</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">1</span>].set_title(<span class="st">'Original Image'</span>)</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-27-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="hough-transform-for-detecting-straight-edges" class="level3">
+<h3 class="anchored" data-anchor-id="hough-transform-for-detecting-straight-edges">Hough Transform for detecting straight edges</h3>
+<div id="cell-39" class="cell" data-execution_count="128">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> transform.probabilistic_hough_line(closed_edges, threshold<span class="op">=</span><span class="dv">5</span>, line_length<span class="op">=</span><span class="dv">25</span>, line_gap<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-40" class="cell" data-execution_count="129">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating figure 2</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">5</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> axes.ravel()</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(image_gray, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Input image'</span>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(canny_edges, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Canny edges'</span>)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].imshow(canny_edges <span class="op">*</span> <span class="dv">0</span>)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> line <span class="kw">in</span> lines:</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    p0, p1 <span class="op">=</span> line</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">2</span>].plot((p0[<span class="dv">0</span>], p1[<span class="dv">0</span>]), (p0[<span class="dv">1</span>], p1[<span class="dv">1</span>]))</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].set_xlim((<span class="dv">0</span>, image_gray.shape[<span class="dv">1</span>]))</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].set_ylim((image_gray.shape[<span class="dv">0</span>], <span class="dv">0</span>))</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">2</span>].set_title(<span class="st">'Probabilistic Hough'</span>)</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a <span class="kw">in</span> ax:</span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>    a.set_axis_off()</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-41" class="cell" data-execution_count="130">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a blank canvas to draw lines on</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>hough_lines <span class="op">=</span> np.zeros(image_gray.shape, dtype<span class="op">=</span>np.uint8)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the detected lines on the canvas</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> line <span class="kw">in</span> lines:</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    p0, p1 <span class="op">=</span> line</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Draw line segment</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    rr, cc <span class="op">=</span> draw.line(p0[<span class="dv">1</span>], p0[<span class="dv">0</span>], p1[<span class="dv">1</span>], p1[<span class="dv">0</span>])</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    hough_lines[rr, cc] <span class="op">=</span> <span class="dv">255</span>  <span class="co"># Set the pixel values to white (255) along the line</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co"># # Display the canvas with the detected lines</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.imshow(hough_lines, cmap='gray')</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title('Image with Detected Lines')</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.axis('off')</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.show()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="lets-try-to-classify-gray-pixels-these-may-help-identify-the-roads" class="level2">
+<h2 class="anchored" data-anchor-id="lets-try-to-classify-gray-pixels-these-may-help-identify-the-roads">Let’s try to classify gray pixels, these may help identify the roads</h2>
+<div id="cell-43" class="cell" data-execution_count="131">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> classify_gray(image):</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert the image to Lab color space</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute the standard deviation of the r, g, and b channels</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># std_dev = np.std(image[:,:,0], image[:,:,1], image[:,:,2])</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    std_dev <span class="op">=</span> np.std(image, axis <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define a threshold for classifying gray pixels</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    diff_threshold <span class="op">=</span> <span class="dv">6</span> <span class="co"># Adjust as needed</span></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Classify pixels as gray or not gray based on the standard deviation</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    gray_mask <span class="op">=</span> std_dev <span class="op">&lt;</span> diff_threshold</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> gray_mask</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-44" class="cell" data-execution_count="132">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>gray_mask <span class="op">=</span> classify_gray(image)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>gray_mask <span class="op">=</span> gray_mask.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-45" class="cell" data-execution_count="133">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating figure 2</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].imshow(gray_mask, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">'Gray Mask'</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].imshow(image)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">'Original Image'</span>)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-33-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="more-features" class="level3">
+<h3 class="anchored" data-anchor-id="more-features">More features</h3>
+<div id="cell-47" class="cell" data-execution_count="134">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create additional features</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Range of values (gray pixels will have low range)</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> image.<span class="bu">max</span>(axis <span class="op">=</span> <span class="dv">2</span>) <span class="op">-</span> image.<span class="bu">min</span>(axis <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Canny edge detection</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>canny_edges_r <span class="op">=</span> feature.canny(image[:,:,<span class="dv">0</span>], sigma<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>canny_edges_g <span class="op">=</span> feature.canny(image[:,:,<span class="dv">1</span>], sigma<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>canny_edges_b <span class="op">=</span> feature.canny(image[:,:,<span class="dv">2</span>], sigma<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Gaussian blur sigma = 1</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>gaus_r_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>gaus_g_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>gaus_b_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Gaussian blur sigma = 3</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>gaus_r_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>gaus_g_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>gaus_b_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Gaussian blur sigma = 5</span></span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>gaus_r_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>gaus_g_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>gaus_b_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="co"># LoG blur sigma = .5</span></span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>log_r_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>log_g_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>log_b_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a><span class="co"># LoG blur sigma = .6</span></span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>log_r_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>log_g_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a>log_b_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb40-35"><a href="#cb40-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-36"><a href="#cb40-36" aria-hidden="true" tabindex="-1"></a><span class="co"># LoG blur sigma = .8</span></span>
+<span id="cb40-37"><a href="#cb40-37" aria-hidden="true" tabindex="-1"></a>log_r_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb40-38"><a href="#cb40-38" aria-hidden="true" tabindex="-1"></a>log_g_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb40-39"><a href="#cb40-39" aria-hidden="true" tabindex="-1"></a>log_b_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb40-40"><a href="#cb40-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-41"><a href="#cb40-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Add layers to model</span></span>
+<span id="cb40-42"><a href="#cb40-42" aria-hidden="true" tabindex="-1"></a>image_layers <span class="op">=</span> np.dstack([image, r, canny_edges_r, canny_edges_g, canny_edges_b,</span>
+<span id="cb40-43"><a href="#cb40-43" aria-hidden="true" tabindex="-1"></a>                             gaus_r_1, gaus_g_1, gaus_b_1, gaus_r_3, gaus_g_3, gaus_b_3,</span>
+<span id="cb40-44"><a href="#cb40-44" aria-hidden="true" tabindex="-1"></a>                             gaus_r_5, gaus_g_5, gaus_b_5, log_r_5, log_g_5, log_b_5,</span>
+<span id="cb40-45"><a href="#cb40-45" aria-hidden="true" tabindex="-1"></a>                             log_r_6, log_g_6, log_b_6, log_r_8, log_g_8, log_b_8, hough_lines, gray_mask])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="pca-to-select-important-features" class="level2">
+<h2 class="anchored" data-anchor-id="pca-to-select-important-features">PCA to select important features</h2>
+<div id="cell-49" class="cell" data-execution_count="135">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>image_layers.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="135">
+<pre><code>(1500, 1500, 27)</code></pre>
+</div>
+</div>
+<div id="cell-50" class="cell" data-execution_count="136">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>image_layers <span class="op">=</span> image_layers.reshape(image_layers.shape[<span class="dv">0</span>] <span class="op">*</span> image_layers.shape[<span class="dv">1</span>], image_layers.shape[<span class="dv">2</span>])</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>image_layers.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="136">
+<pre><code>(2250000, 27)</code></pre>
+</div>
+</div>
+<div id="cell-51" class="cell" data-execution_count="137">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardize the features</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>image_layers_scaled <span class="op">=</span> scaler.fit_transform(image_layers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-52" class="cell" data-execution_count="138">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize PCA and fit the scaled data</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>pca <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>layers_pca <span class="op">=</span> pca.fit_transform(image_layers_scaled)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Explained variance ratio</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>explained_variance_ratio <span class="op">=</span> pca.explained_variance_ratio_</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting the explained variance ratio</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>))</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>plt.bar(<span class="bu">range</span>(<span class="dv">1</span>, <span class="bu">len</span>(explained_variance_ratio) <span class="op">+</span> <span class="dv">1</span>), explained_variance_ratio, alpha<span class="op">=</span><span class="fl">0.5</span>, align<span class="op">=</span><span class="st">'center'</span>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Explained Variance Ratio'</span>)</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Principal Components'</span>)</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Explained Variance Ratio by Principal Components'</span>)</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-38-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-53" class="cell" data-execution_count="139">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>layers_pca.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="139">
+<pre><code>(2250000, 5)</code></pre>
+</div>
+</div>
+<p>Transform to create new features in less dimensions</p>
+<div id="cell-55" class="cell" data-execution_count="140">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>new_features <span class="op">=</span> pca.transform(image_layers_scaled)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-56" class="cell" data-execution_count="141">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>new_features.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="141">
+<pre><code>(2250000, 5)</code></pre>
+</div>
+</div>
+<section id="run-k_means-clustering-with-3-top-components-from-pca" class="level3">
+<h3 class="anchored" data-anchor-id="run-k_means-clustering-with-3-top-components-from-pca">Run k_means clustering with 3 top components from PCA</h3>
+<div id="cell-58" class="cell" data-execution_count="165">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># run with pca reduce features</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>sk_kmeans_pca <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">3</span>, verbose<span class="op">=</span><span class="dv">1</span>).fit(new_features)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="co"># run with all features</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># sk_kmeans_pca = KMeans(n_clusters=3, verbose=1).fit(image_layers)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initialization complete
+Iteration 0, inertia 42054121.57276795.
+Iteration 1, inertia 26981420.397716623.
+Iteration 2, inertia 24075770.985596742.
+Iteration 3, inertia 23204850.034456.
+Iteration 4, inertia 22773059.031056065.
+Iteration 5, inertia 22546215.95384517.
+Iteration 6, inertia 22423341.63887473.
+Iteration 7, inertia 22355134.86347936.
+Iteration 8, inertia 22316315.6773539.
+Iteration 9, inertia 22293824.586302444.
+Iteration 10, inertia 22280357.514531154.
+Iteration 11, inertia 22272380.15946948.
+Iteration 12, inertia 22267615.2482199.
+Iteration 13, inertia 22264705.49134808.
+Iteration 14, inertia 22262877.13615176.
+Iteration 15, inertia 22261773.899383508.
+Iteration 16, inertia 22261102.7837751.
+Converged at iteration 16: center shift 0.0003135446683950635 within tolerance 0.0004137793031581444.</code></pre>
+</div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="166">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>sk_segmented_image_pca <span class="op">=</span> sk_kmeans_pca.labels_.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-60" class="cell" data-execution_count="167">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating figure 2</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>cluster_one <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">0</span>)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">0</span>].imshow(cluster_one, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">0</span>].set_title(<span class="st">'Cluster One'</span>)</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>cluster_two <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">1</span>)</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">1</span>].imshow(cluster_two, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>][<span class="dv">1</span>].set_title(<span class="st">'Cluster Two'</span>)</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>cluster_three <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span><span class="dv">2</span>)</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">0</span>].imshow(cluster_three, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">0</span>].set_title(<span class="st">'Cluster Three'</span>)</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">1</span>].imshow(image)</span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>][<span class="dv">1</span>].set_title(<span class="st">'Original Image'</span>)</span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-44-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Which cluster best captures the roads? Let’s find out with the results</p>
+<div id="cell-62" class="cell" data-execution_count="168">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>image_label_bool <span class="op">=</span> (image_label<span class="op">==</span><span class="dv">255</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-63" class="cell" data-execution_count="169">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>cluster_one.dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="169">
+<pre><code>dtype('bool')</code></pre>
+</div>
+</div>
+<div id="cell-64" class="cell" data-execution_count="170">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>accuracy_metrics(image_label_bool.ravel(), cluster_one.ravel())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion matrix:
+ [[  92737   47528]
+ [ 403434 1706301]]
+Overall accuracy: 0.8 
+Precision: 0.187 
+Recall 0.661 
+Dice Coefficient 0.291</code></pre>
+</div>
+</div>
+<div id="cell-65" class="cell" data-execution_count="171">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>accuracy_metrics(image_label_bool.ravel(), cluster_two.ravel())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion matrix:
+ [[  42148   98117]
+ [1097545 1012190]]
+Overall accuracy: 0.469 
+Precision: 0.037 
+Recall 0.3 
+Dice Coefficient 0.066</code></pre>
+</div>
+</div>
+<div id="cell-66" class="cell" data-execution_count="172">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>accuracy_metrics(image_label_bool.ravel(), cluster_three.ravel())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion matrix:
+ [[   5380  134885]
+ [ 608756 1500979]]
+Overall accuracy: 0.669 
+Precision: 0.009 
+Recall 0.038 
+Dice Coefficient 0.014</code></pre>
+</div>
+</div>
+<div id="cell-67" class="cell" data-execution_count="56">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> identify_road_cluster(clustered_image, image_label):</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>    cluster_labels <span class="op">=</span> np.unique(clustered_image)</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>    best_precision <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>    best_cluster <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> cluster_labels:</span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a>        cluster <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span>i)</span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a>        C <span class="op">=</span> confusion_matrix(image_label.ravel(), cluster.ravel(), labels<span class="op">=</span>(<span class="va">True</span>, <span class="va">False</span>))</span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># # Overall accuracy rate</span></span>
+<span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># acc = (C[0,0] + C[1,1])/C.sum()</span></span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># # Recall</span></span>
+<span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># recall = (C[0,0])/(C[0,0] + C[1,0])</span></span>
+<span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Precision</span></span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>        prec <span class="op">=</span> (C[<span class="dv">0</span>,<span class="dv">0</span>])<span class="op">/</span>(C[<span class="dv">0</span>,<span class="dv">0</span>] <span class="op">+</span> C[<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> prec <span class="op">&gt;</span> best_precision:</span>
+<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>            best_precision <span class="op">=</span> prec</span>
+<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a>            best_cluster <span class="op">=</span> i</span>
+<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-23"><a href="#cb65-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> best_cluster</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-68" class="cell" data-execution_count="57">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>cluster <span class="op">=</span> identify_road_cluster(sk_segmented_image_pca, image_label_bool)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-69" class="cell" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>image_label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="58">
+<pre><code>array([[0, 0, 0, ..., 0, 0, 0],
+       [0, 0, 0, ..., 0, 0, 0],
+       [0, 0, 0, ..., 0, 0, 0],
+       ...,
+       [0, 0, 0, ..., 0, 0, 0],
+       [0, 0, 0, ..., 0, 0, 0],
+       [0, 0, 0, ..., 0, 0, 0]], dtype=uint8)</code></pre>
+</div>
+</div>
+<div id="cell-70" class="cell" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(<span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">15</span>))</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>plt.clf()</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> fig.add_subplot(<span class="dv">111</span>, projection<span class="op">=</span><span class="st">"3d"</span>, elev<span class="op">=</span><span class="dv">45</span>, azim<span class="op">=</span><span class="dv">90</span>)</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>ax.set_position([<span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.95</span>, <span class="dv">1</span>])</span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> new_features</span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> image_label.ravel()</span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, label <span class="kw">in</span> [(<span class="st">"Background"</span>, <span class="dv">0</span>), (<span class="st">"Road"</span>, <span class="dv">255</span>)]:</span>
+<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>    ax.text3D(</span>
+<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a>        X[y <span class="op">==</span> label, <span class="dv">0</span>].mean(),</span>
+<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>        X[y <span class="op">==</span> label, <span class="dv">1</span>].mean() <span class="op">+</span> <span class="fl">1.5</span>,</span>
+<span id="cb69-14"><a href="#cb69-14" aria-hidden="true" tabindex="-1"></a>        X[y <span class="op">==</span> label, <span class="dv">2</span>].mean(),</span>
+<span id="cb69-15"><a href="#cb69-15" aria-hidden="true" tabindex="-1"></a>        name,</span>
+<span id="cb69-16"><a href="#cb69-16" aria-hidden="true" tabindex="-1"></a>        horizontalalignment<span class="op">=</span><span class="st">"center"</span>,</span>
+<span id="cb69-17"><a href="#cb69-17" aria-hidden="true" tabindex="-1"></a>        bbox<span class="op">=</span><span class="bu">dict</span>(alpha<span class="op">=</span><span class="fl">0.5</span>, edgecolor<span class="op">=</span><span class="st">"w"</span>, facecolor<span class="op">=</span><span class="st">"w"</span>),</span>
+<span id="cb69-18"><a href="#cb69-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb69-19"><a href="#cb69-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Reorder the labels to have colors matching the cluster results</span></span>
+<span id="cb69-20"><a href="#cb69-20" aria-hidden="true" tabindex="-1"></a><span class="co"># y = np.choose(y, [0, 255]).astype(float)</span></span>
+<span id="cb69-21"><a href="#cb69-21" aria-hidden="true" tabindex="-1"></a>ax.scatter(X[:, <span class="dv">0</span>], X[:, <span class="dv">1</span>], X[:, <span class="dv">2</span>], c<span class="op">=</span>y, cmap<span class="op">=</span><span class="st">'Accent'</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>)</span>
+<span id="cb69-22"><a href="#cb69-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-23"><a href="#cb69-23" aria-hidden="true" tabindex="-1"></a>ax.xaxis.set_ticklabels([])</span>
+<span id="cb69-24"><a href="#cb69-24" aria-hidden="true" tabindex="-1"></a>ax.yaxis.set_ticklabels([])</span>
+<span id="cb69-25"><a href="#cb69-25" aria-hidden="true" tabindex="-1"></a>ax.zaxis.set_ticklabels([])</span>
+<span id="cb69-26"><a href="#cb69-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-27"><a href="#cb69-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="k_means_files/figure-html/cell-53-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-71" class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_features(image):</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculation Canny gradient</span></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>    image_gray <span class="op">=</span> skol.rgb2gray(image)</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>    canny_edges <span class="op">=</span> feature.canny(image_gray, sigma<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create disk</span></span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>    disk <span class="op">=</span> skimor.disk(<span class="dv">1</span>)</span>
+<span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-10"><a href="#cb70-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Area closing for hough lines</span></span>
+<span id="cb70-11"><a href="#cb70-11" aria-hidden="true" tabindex="-1"></a>    closed_edges <span class="op">=</span> skimor.dilation(canny_edges, footprint <span class="op">=</span> disk)</span>
+<span id="cb70-12"><a href="#cb70-12" aria-hidden="true" tabindex="-1"></a>    closed_edges <span class="op">=</span> closed_edges <span class="op">*</span> <span class="dv">255</span></span>
+<span id="cb70-13"><a href="#cb70-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-14"><a href="#cb70-14" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> transform.probabilistic_hough_line(closed_edges, threshold<span class="op">=</span><span class="dv">5</span>, line_length<span class="op">=</span><span class="dv">25</span>, line_gap<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb70-15"><a href="#cb70-15" aria-hidden="true" tabindex="-1"></a>    hough_lines <span class="op">=</span> np.zeros(image_gray.shape, dtype<span class="op">=</span>np.uint8)</span>
+<span id="cb70-16"><a href="#cb70-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-17"><a href="#cb70-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Draw the detected lines on the canvas</span></span>
+<span id="cb70-18"><a href="#cb70-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> lines:</span>
+<span id="cb70-19"><a href="#cb70-19" aria-hidden="true" tabindex="-1"></a>        p0, p1 <span class="op">=</span> line</span>
+<span id="cb70-20"><a href="#cb70-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw line segment</span></span>
+<span id="cb70-21"><a href="#cb70-21" aria-hidden="true" tabindex="-1"></a>        rr, cc <span class="op">=</span> draw.line(p0[<span class="dv">1</span>], p0[<span class="dv">0</span>], p1[<span class="dv">1</span>], p1[<span class="dv">0</span>])</span>
+<span id="cb70-22"><a href="#cb70-22" aria-hidden="true" tabindex="-1"></a>        hough_lines[rr, cc] <span class="op">=</span> <span class="dv">255</span>  <span class="co"># Set the pixel values to white (255) along the line</span></span>
+<span id="cb70-23"><a href="#cb70-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-24"><a href="#cb70-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">#create gray mask</span></span>
+<span id="cb70-25"><a href="#cb70-25" aria-hidden="true" tabindex="-1"></a>    gray_mask <span class="op">=</span> classify_gray(image)</span>
+<span id="cb70-26"><a href="#cb70-26" aria-hidden="true" tabindex="-1"></a>    gray_mask <span class="op">=</span> gray_mask.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span>
+<span id="cb70-27"><a href="#cb70-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-28"><a href="#cb70-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create additional features</span></span>
+<span id="cb70-29"><a href="#cb70-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-30"><a href="#cb70-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Range of values (gray pixels will have low range)</span></span>
+<span id="cb70-31"><a href="#cb70-31" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> image.<span class="bu">max</span>(axis <span class="op">=</span> <span class="dv">2</span>) <span class="op">-</span> image.<span class="bu">min</span>(axis <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb70-32"><a href="#cb70-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-33"><a href="#cb70-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Canny edge detection</span></span>
+<span id="cb70-34"><a href="#cb70-34" aria-hidden="true" tabindex="-1"></a>    canny_edges_r <span class="op">=</span> feature.canny(image[:,:,<span class="dv">0</span>], sigma<span class="op">=</span><span class="dv">4</span>)<span class="op">;</span></span>
+<span id="cb70-35"><a href="#cb70-35" aria-hidden="true" tabindex="-1"></a>    canny_edges_g <span class="op">=</span> feature.canny(image[:,:,<span class="dv">1</span>], sigma<span class="op">=</span><span class="dv">4</span>)<span class="op">;</span></span>
+<span id="cb70-36"><a href="#cb70-36" aria-hidden="true" tabindex="-1"></a>    canny_edges_b <span class="op">=</span> feature.canny(image[:,:,<span class="dv">2</span>], sigma<span class="op">=</span><span class="dv">4</span>)<span class="op">;</span></span>
+<span id="cb70-37"><a href="#cb70-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-38"><a href="#cb70-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Gaussian blur sigma = 1</span></span>
+<span id="cb70-39"><a href="#cb70-39" aria-hidden="true" tabindex="-1"></a>    gaus_r_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb70-40"><a href="#cb70-40" aria-hidden="true" tabindex="-1"></a>    gaus_g_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb70-41"><a href="#cb70-41" aria-hidden="true" tabindex="-1"></a>    gaus_b_1 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb70-42"><a href="#cb70-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-43"><a href="#cb70-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Gaussian blur sigma = 3</span></span>
+<span id="cb70-44"><a href="#cb70-44" aria-hidden="true" tabindex="-1"></a>    gaus_r_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb70-45"><a href="#cb70-45" aria-hidden="true" tabindex="-1"></a>    gaus_g_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb70-46"><a href="#cb70-46" aria-hidden="true" tabindex="-1"></a>    gaus_b_3 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">3</span>)</span>
+<span id="cb70-47"><a href="#cb70-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-48"><a href="#cb70-48" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Gaussian blur sigma = 5</span></span>
+<span id="cb70-49"><a href="#cb70-49" aria-hidden="true" tabindex="-1"></a>    gaus_r_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb70-50"><a href="#cb70-50" aria-hidden="true" tabindex="-1"></a>    gaus_g_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb70-51"><a href="#cb70-51" aria-hidden="true" tabindex="-1"></a>    gaus_b_5 <span class="op">=</span> gaussian_filter(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb70-52"><a href="#cb70-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-53"><a href="#cb70-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># LoG blur sigma = .5</span></span>
+<span id="cb70-54"><a href="#cb70-54" aria-hidden="true" tabindex="-1"></a>    log_r_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb70-55"><a href="#cb70-55" aria-hidden="true" tabindex="-1"></a>    log_g_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb70-56"><a href="#cb70-56" aria-hidden="true" tabindex="-1"></a>    log_b_5 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.5</span>)</span>
+<span id="cb70-57"><a href="#cb70-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-58"><a href="#cb70-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># LoG blur sigma = .6</span></span>
+<span id="cb70-59"><a href="#cb70-59" aria-hidden="true" tabindex="-1"></a>    log_r_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb70-60"><a href="#cb70-60" aria-hidden="true" tabindex="-1"></a>    log_g_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb70-61"><a href="#cb70-61" aria-hidden="true" tabindex="-1"></a>    log_b_6 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.6</span>)</span>
+<span id="cb70-62"><a href="#cb70-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-63"><a href="#cb70-63" aria-hidden="true" tabindex="-1"></a>    <span class="co"># LoG blur sigma = .8</span></span>
+<span id="cb70-64"><a href="#cb70-64" aria-hidden="true" tabindex="-1"></a>    log_r_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">0</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb70-65"><a href="#cb70-65" aria-hidden="true" tabindex="-1"></a>    log_g_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">1</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb70-66"><a href="#cb70-66" aria-hidden="true" tabindex="-1"></a>    log_b_8 <span class="op">=</span> gaussian_laplace(image[:,:,<span class="dv">2</span>], sigma <span class="op">=</span> <span class="fl">.8</span>)</span>
+<span id="cb70-67"><a href="#cb70-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-68"><a href="#cb70-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add layers to model</span></span>
+<span id="cb70-69"><a href="#cb70-69" aria-hidden="true" tabindex="-1"></a>    image_layers <span class="op">=</span> np.dstack([image, r, canny_edges_r, canny_edges_g, canny_edges_b,</span>
+<span id="cb70-70"><a href="#cb70-70" aria-hidden="true" tabindex="-1"></a>                                gaus_r_1, gaus_g_1, gaus_b_1, gaus_r_3, gaus_g_3, gaus_b_3,</span>
+<span id="cb70-71"><a href="#cb70-71" aria-hidden="true" tabindex="-1"></a>                                gaus_r_5, gaus_g_5, gaus_b_5, log_r_5, log_g_5, log_b_5,</span>
+<span id="cb70-72"><a href="#cb70-72" aria-hidden="true" tabindex="-1"></a>                                log_r_6, log_g_6, log_b_6, log_r_8, log_g_8, log_b_8, hough_lines, gray_mask])</span>
+<span id="cb70-73"><a href="#cb70-73" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb70-74"><a href="#cb70-74" aria-hidden="true" tabindex="-1"></a>    image_layers <span class="op">=</span> image_layers.reshape(image_layers.shape[<span class="dv">0</span>] <span class="op">*</span> image_layers.shape[<span class="dv">1</span>], image_layers.shape[<span class="dv">2</span>])</span>
+<span id="cb70-75"><a href="#cb70-75" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb70-76"><a href="#cb70-76" aria-hidden="true" tabindex="-1"></a>    scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb70-77"><a href="#cb70-77" aria-hidden="true" tabindex="-1"></a>    image_layers_scaled <span class="op">=</span> scaler.fit_transform(image_layers)</span>
+<span id="cb70-78"><a href="#cb70-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-79"><a href="#cb70-79" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(image_layers.shape)</span>
+<span id="cb70-80"><a href="#cb70-80" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb70-81"><a href="#cb70-81" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image_layers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-72" class="cell" data-execution_count="61">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_pca(image_layers, n_components):</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize PCA and fit the scaled data</span></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>    pca <span class="op">=</span> PCA(n_components<span class="op">=</span>n_components)</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>    layers_pca <span class="op">=</span> pca.fit_transform(image_layers)</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Explained variance ratio</span></span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>    explained_variance_ratio <span class="op">=</span> pca.explained_variance_ratio_</span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>    new_features <span class="op">=</span> pca.transform(image_layers)</span>
+<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> new_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-73" class="cell" data-execution_count="62">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_k_means(image_layers, n_clusters):</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>    sk_kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span>n_clusters, verbose<span class="op">=</span><span class="dv">1</span>).fit(image_layers)</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>    sk_segmented_image_pca <span class="op">=</span> sk_kmeans.labels_.reshape((image.shape[<span class="dv">0</span>], image.shape[<span class="dv">1</span>]))</span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>    best_cluster <span class="op">=</span> identify_road_cluster(sk_segmented_image_pca, image_label)</span>
+<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>    segmented_roads <span class="op">=</span> (sk_segmented_image_pca<span class="op">==</span>best_cluster)</span>
+<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> segmented_roads</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-74" class="cell" data-execution_count="63">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> full_pipeline(image, image_label, n_clusters<span class="op">=</span><span class="dv">3</span>, with_pca<span class="op">=</span><span class="va">False</span>, pca_n_components<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Creating features..."</span>)</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>    image_layers <span class="op">=</span> create_features(image)</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(with_pca):</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Reducing dimensions..."</span>)</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>        image_layers <span class="op">=</span> get_pca(image_layers<span class="op">=</span>image_layers, n_components<span class="op">=</span>pca_n_components)</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Segmenting Roads..."</span>)</span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>    segmented_roads <span class="op">=</span> run_k_means(image_layers<span class="op">=</span>image_layers, n_clusters<span class="op">=</span>n_clusters)</span>
+<span id="cb73-11"><a href="#cb73-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Segmentation Complete"</span>)</span>
+<span id="cb73-12"><a href="#cb73-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-13"><a href="#cb73-13" aria-hidden="true" tabindex="-1"></a>    plt.imshow(segmented_roads, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb73-14"><a href="#cb73-14" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb73-15"><a href="#cb73-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-16"><a href="#cb73-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Analyzing metrics..."</span>)</span>
+<span id="cb73-17"><a href="#cb73-17" aria-hidden="true" tabindex="-1"></a>    accuracy_metrics(segmented_roads, image_label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-75" class="cell" data-execution_count="64">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>image.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="64">
+<pre><code>(1500, 1500, 3)</code></pre>
+</div>
+</div>
+<div id="cell-76" class="cell" data-execution_count="65">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># full_pipeline(image, image_label_bool)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
