@@ -56,7 +56,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -182,6 +202,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>Semantic segmentation is a process that takes an input image and returns an output image of the same size where each pixel belongs to a particular class of objects, not distinguishing between objects within a class. For this study, the resulting image is binary, true meaning that a pixel is part of the class we are trying to segment and false meaning a pixel is not part of the class.</p>
 <p>The purpose of this project was to compare different methods to use satellite data to segment roads. Three machine learning methodologies were used and each had increasing complexity and computational demands. These methods were K-Means Clustering, Random Forests, and Deep Learning using the UNet architecture. K-Means clustering is an unsupervised machine learning algorithm that partitions the data in k clusters, where k is determined by the user based on how many categories you want to cluster. It iteratively updates the centroids of each cluster using mean coordinates until convergence is achieved. Random forest classification is an ensemble learning method involving many decision trees. Each decision tree is trained on a random subset of observations and features, and predictions of the random forest are based on a plurality vote of the decision trees. The UNet architecture for deep neural networks was used as the final method. UNet consists of two convolutional neural networks put together: an encoder and a decoder. The encoder analyzes and extracts features and important information from the input image and the decoder takes this information and generates the binary segmentation image.</p>
+<p>To produce our model with k-means clustering, we consulted journal articles by <span class="citation" data-cites="jinxin2006methodology">Jinxin, Qixin, and Liguang (<a href="#ref-jinxin2006methodology" role="doc-biblioref">2006</a>)</span> and <span class="citation" data-cites="maurya2011road">Maurya, Gupta, and Shukla (<a href="#ref-maurya2011road" role="doc-biblioref">2011</a>)</span>. To implement the random forest algorithm, we mainly used <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"><code>scikit-learn</code>’s documentation</a>, but to understand the algorithm, we read this article on <a href="https://www.analyticsvidhya.com/blog/2021/08/decision-tree-algorithm/">decision trees</a> and a follow up article on <a href="https://www.analyticsvidhya.com/blog/2021/06/understanding-random-forest/">random forests</a>. For context on deep learning with remote sensing imagery, we consulted <span class="citation" data-cites="lv2023deep">Lv et al. (<a href="#ref-lv2023deep" role="doc-biblioref">2023</a>)</span> and <span class="citation" data-cites="fan2023resat">Fan et al. (<a href="#ref-fan2023resat" role="doc-biblioref">2023</a>)</span>.</p>
 <p>Each method was implemented and trained, if necessary, and then segmentation metrics were tested to see how well each method was performing. The metrics used were precision, recall, and Dice Coefficient. In addition to comparing the performance of each method, we discuss the computational power, training data, and time needed in order to implement them. The dataset used was <a href="https://www.kaggle.com/datasets/balraj98/massachusetts-roads-dataset">Massachusetts Road Dataset</a>, which consists of 1110 training, 14 validation, and 49 testing satellite image and label pairs. Each image is 1500 by 1500 pixels at 1 meter resolution, resulting in each imaging capturing 2.25 square kilometers.</p>
 <p>This report is a summary of our work, and does not include all code. In particular, training the U-Net model required substantial computational effort and we did not re-run the entire model in this notebook. For full documentation of our work, please visit our <a href="https://github.com/Liam-W-Smith/csci-0452-final-project/">GitHub repository</a>.</p>
 </section>
@@ -493,14 +514,14 @@ window.Quarto = {
 <p>On the bottom middle is the original image after gaussian blurring with <span class="math inline">\(\sigma = 3\)</span>. Our thought process here was that there might be some noise in the image leading random pixels to have the same R, G, and B values as roads. By blurring the image, we hoped to account for this by giving some weight to the values of nearby pixels. We include gaussian blur with <span class="math inline">\(\sigma = 1\)</span>, <span class="math inline">\(\sigma = 3\)</span>, and <span class="math inline">\(\sigma = 5\)</span> for red, green and blue, hoping that our model might learn from multiple blurring radii.</p>
 <p>On the bottom right is our image after the log of gaussian filter has been applied to the red, green and blue channels. We hopes to pick up on the width/frequency of roads with this filter, so we included this filter for <span class="math inline">\(\sigma = 0.5\)</span>, <span class="math inline">\(\sigma = 0.6\)</span>, and <span class="math inline">\(\sigma = 0.8\)</span>.</p>
 </section>
-<section id="principle-components-analysis" class="level3">
-<h3 class="anchored" data-anchor-id="principle-components-analysis">Principle Components Analysis</h3>
+<section id="principal-components-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="principal-components-analysis">Principal Components Analysis</h3>
 <p>Principal Component Analysis (PCA) was utilized to assess the possibility of cutting down on the number of features input into the various models. Currently there are about 27 filtered and calculated features extracted from each 1500x1500x3 RGB image. When scaling this process, the ability to cut down on preprocessing steps and decrease the size of the image input into the models would provide large increases in the speed and storage needed to run this process. This is where PCA has the potential to help, PCA is a commonly used tool for dimensionality reduction across data science. PCA is especially helpful when a dataset has multiple potentially correlated and redundant features and it is unclear which features are most important. In this situation, many of the features generated from our satellite images may provide very similar information or are highly correlated. PCA would allow us to use less layers while retaining the maximum amount of variance.</p>
 </section>
 <section id="k-means-clustering" class="level3">
 <h3 class="anchored" data-anchor-id="k-means-clustering">K-Means Clustering</h3>
 <p>K-Means Clustering is a basic unsupervised machine learning algorithm that groups data points into k clusters, the value of k can be chosen by the user. The centroids of each cluster are initialized randomly as three data points and all points are assigned to the cluster nearest to them. Then the mean coordinates of all the points in each cluster is calculated and this value is now the new centroid for that cluster. Then the process is repeated until a maximum number of interactions is reached or the centroids spot changing significantly between each interaction. Although there were only two categories in this study; road and background, k was chosen to be three. This is because it was found by (Maurya, et al) to keep the clusters containing the roads from including other non-road features.</p>
-<p>K-Means clustering was run on features extracted from the full 1500x1500 images, and two sets of features were used. First was all features discussed in the previous section and the second was the top 5 principle components accessed by PCA. We will compare the results of these two approaches to K-Means clustering and then compare the results of K-Means in general to the results from our other models.</p>
+<p>K-Means clustering was run on features extracted from the full 1500x1500 images, and two sets of features were used. First was all features discussed in the previous section and the second was the top 5 principal components accessed by PCA. We will compare the results of these two approaches to K-Means clustering and then compare the results of K-Means in general to the results from our other models.</p>
 </section>
 <section id="random-forest" class="level3">
 <h3 class="anchored" data-anchor-id="random-forest">Random Forest</h3>
@@ -552,7 +573,7 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pca_filters <span class="op">=</span> compute_features(pca_img_cropped)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Show top 5 principle components</p>
+<p>Show top 5 principal components</p>
 <div id="18ebbfea" class="cell" data-execution_count="19">
 <details class="code-fold">
 <summary>Code</summary>
@@ -585,7 +606,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>This graph shows the percent of variance explained by the top 5 principle components, it can be interpretted that since the top component explains about 45% of variance, the second component explains about 15%, and so on. Therefore, in reducing our dimensions to just 5 we still maintain around 70-80% of the variance that our previous 27 features had.</p>
+<p>This graph shows the percent of variance explained by the top 5 principal components, it can be interpretted that since the top component explains about 45% of variance, the second component explains about 15%, and so on. Therefore, in reducing our dimensions to just 5 we still maintain around 70-80% of the variance that our previous 27 features had.</p>
 <p>In order to visualize the new dimensinos that PCA can output, we will use the top 3 components to plot our road and background points in 3D space</p>
 <div id="a882d38e" class="cell" data-execution_count="20">
 <details class="code-fold">
@@ -1829,13 +1850,8 @@ DICE: 0.4</code></pre>
 </tbody>
 </table>
 <p>Essentially, with increasing complexity of the algorithm and computational requirements came increased performance. K-Means clustering required the least computational power but also achieved the worst results, achieving a Dice coefficient of 0.291 after we reduced the number of features using PCA. Random forest required more computational power, especially when we began sampling training data from multiple images, achieving an improved Dice score of 0.4. Finally, our U-Net model achieved even better results when we considered small subsets of our testing images with a dice score of 0.604, but poor results when applied to the entire image with a Dice score of 0.092. The U-Net models in the literature and Kaggle datasets have achieved by far the best results. Unfortunately, achieving such high performance with U-Net requires substantial computational power for model training. Overall, we conclude that U-Net can achieve the best performance when appropriate resources are available. In the absence of high performance computing capabilities, random forest may suffice.</p>
+<p>Additionally, it is interesting to note that we had mixed results with the effectiveness of PCA. For K-Means Clustering, using the top-5 components helped the model perform better, but for Random Forest, using PCA led to decreased performance. PCA was not applicable to deep neural networks.</p>
 </section>
-</section>
-<section id="discussion" class="level2">
-<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
-<p>We had mixed results with the effectiveness of PCA. For K-Means Clustering, using the top-5 components helped the model perform better but for Random Forest, using PCA did not improve the results. PCA was not applicable to deep neural networks so we cannot make a firm conclusion on whether or not PCA is an important tool for segmenting road with satellite images.</p>
-<p>ADD MORE</p>
-<p>Althogh U-Net was very expensive computationally and took the most time to run, we conclude that it is the best approach of the three we tested. This methodology will often be applied to very large datasets and will had high computational requirements just because of the amount of data. Also high precision and recall are very important if the benefits from segmenting roads is to be maximized.</p>
 </section>
 <section id="accessibility" class="level2">
 <h2 class="anchored" data-anchor-id="accessibility">Accessibility</h2>
@@ -1860,10 +1876,24 @@ DICE: 0.4</code></pre>
 <p>Future work we are interested in pursuing is of course integrating LiDAR data into each of our models and comparing the metrics on how well roads were segmented. We are very curious to see if this additional data would help our models and are interested in learning about LiDAR data. Another path of future work is performing more data engineering and augmentation on our training data for input into U-Net. We know from reading and seeing models trained on Kaggle that very accurate segmentations are possible and we had a lot of room for improvement with our model.</p>
 
 
+
 </section>
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-fan2023resat" class="csl-entry" role="listitem">
+Fan, Zhiyong, Yu Liu, Min Xia, Jianmin Hou, Fei Yan, and Qiang Zang. 2023. <span>“ResAt-UNet: A u-Shaped Network Using ResNet and Attention Module for Image Segmentation of Urban Buildings.”</span> <em>IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing</em> 16: 2094–2111.
+</div>
+<div id="ref-jinxin2006methodology" class="csl-entry" role="listitem">
+Jinxin, Cao, Shi Qixin, and Sun Liguang. 2006. <span>“A Methodology for Automatic Detection and Extraction of Road Edges from High Resolution Remote Sensing Images.”</span> In <em>2006 IEEE International Conference on Industrial Technology</em>, 69–74. IEEE.
+</div>
+<div id="ref-lv2023deep" class="csl-entry" role="listitem">
+Lv, Jinna, Qi Shen, Mingzheng Lv, Yiran Li, Lei Shi, and Peiying Zhang. 2023. <span>“Deep Learning-Based Semantic Segmentation of Remote Sensing Images: A Review.”</span> <em>Frontiers in Ecology and Evolution</em> 11: 1201125.
+</div>
+<div id="ref-maurya2011road" class="csl-entry" role="listitem">
+Maurya, Rohit, PR Gupta, and Ajay Shankar Shukla. 2011. <span>“Road Extraction Using k-Means Clustering and Morphological Operations.”</span> In <em>2011 International Conference on Image Information Processing</em>, 1–6. IEEE.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
